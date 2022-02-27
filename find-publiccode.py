@@ -2,15 +2,15 @@
 import requests
 import logging
 import time
+import yaml
+import json
+import pathlib
 import os.path
 import os
 import re
-import sys
-from datetime import datetime
 import subprocess
 import sqlite3
 import http.cookiejar as cookielib
-
 
 
 logging.basicConfig(level=logging.INFO, format='<%(asctime)s %(levelname)s> %(message)s')
@@ -58,7 +58,7 @@ s.cookies = cj
 
 repositoryList = []
 
-for pageNr in range(1, 33):
+for pageNr in range(1, 34):
 
   filename = "htmls/resultpage{}.html".format(pageNr)
   filecontent = ''
@@ -83,27 +83,122 @@ for pageNr in range(1, 33):
     raise SystemExit
 
   repositoryUrls = re.findall( r'<a\s+href="([^"]+/publiccode.yml)"', filecontent)
-  logging.info(repositoryUrls)
+  logging.info(len(repositoryUrls))
 
   repositoryList = repositoryList + repositoryUrls
 
 
 
 logging.info("DONE")
-logging.info(repositoryList)
+logging.debug(repositoryList)
 
 
 # download all publiccode.yml files
-
+nr = 0
+repo_lookup = {}
 for repo in repositoryList:
+  nr = nr + 1
   url = 'https://raw.githubusercontent.com{}'.format(repo.replace('/blob',''))
   m = re.search('^/([^/]+/[^/]+)/', repo)
   reponame = m.group(1)
   filename = 'yamls/' + reponame.replace('/', '-')
+  repo_lookup[filename] = url
   if os.path.isfile(filename):
-    logging.info("OK %s", filename)
+    logging.info("%s OK %s", nr, filename)
   else:
-    logging.info('reading %s <- %s', filename, url)
+    logging.info('%s reading %s <- %s', nr, filename, url)
     req = requests.get(url)
     open(filename, 'wb').write(req.content)
     time.sleep(20)
+
+
+logging.info("YO")
+
+
+
+
+
+
+
+
+
+# helper function to extract nested value of array
+
+def kk(d, n):
+  return d[n] if n in d else ""
+
+def k_extract(target_dict, k_dict):
+  response = {}
+  for key, value in k_dict.items():
+    node_value = ''
+    try:
+      keys = value.split('-')
+      if len(keys) == 4:
+        node_value = target_dict[keys[0]][keys[1]][keys[2]][keys[3]]
+      elif len(keys) == 3:
+        node_value = target_dict[keys[0]][keys[1]][keys[2]]
+      elif len(keys) == 2:
+        node_value = target_dict[keys[0]][keys[1]]
+      elif len(keys) == 1:
+        node_value = target_dict[keys[0]]
+      else:
+        raise Exception("get_nested_json_value() not implemented for {} keys in: {}".format(len(keys), keys))
+
+    except (TypeError, KeyError, IndexError):
+        logging.warn("Did not find key %s", value)
+
+    response[key] = node_value
+  return response
+
+
+
+# read and parse all publiccode.yml files
+
+notValid = []
+flist = []
+for p in pathlib.Path('yamls/').iterdir():
+  if p.is_file():
+    with open(p, "r") as stream:
+      try:
+        data = yaml.safe_load(stream)
+        data['src'] = repo_lookup[str(p)] if str(p) in repo_lookup else "*unknown*"
+        entry = k_extract(data, {
+          'v': 'publiccodeYmlVersion',
+          'date': 'releaseDate',
+          'stat': 'developmentStatus',
+          'name': 'name',
+          'cat': 'categories',
+          'lang': 'localisation-availableLanguages',
+          'type': 'softwareType',
+          'l': 'legal-license',
+          'p': 'platforms',
+          'mnt': 'maintenance-type',
+          'url': 'url',
+          'src': 'src'
+          }
+        )
+
+        logging.debug(entry)
+        if not "name" in entry:
+          logging.error('Repo is missing name: %s', p)
+        flist.append(entry)
+
+      except (yaml.YAMLError, TypeError) as exc:
+        logging.error("yaml file is broken: %s - %e", p, exc)
+        notValid.append({
+          'name': str(p).replace('yamls/',''),
+          'src': repo_lookup[str(p)] if str(p) in repo_lookup else "*unknown*",
+          'error': str(exc)
+          })
+
+
+
+with open('public/public-code-list.json', 'w') as outfile:
+  json.dump(flist, outfile, default=str)
+
+with open('public/public-code-invalid.json', 'w') as outfile:
+  json.dump(notValid, outfile, default=str)
+
+logging.debug(flist)
+
+
