@@ -1,0 +1,82 @@
+[
+  {
+    "name": "italia-dati-ontopia-virtuoso",
+    "src": "https://raw.githubusercontent.com/italia/dati-ontopia-virtuoso/7124b288325d25d2e97c8b2a050afb6f7013e65f/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  },
+  {
+    "name": "Nhialyien-didactic-dollop",
+    "src": "https://raw.githubusercontent.com/Nhialyien/didactic-dollop/e55629e5a309a1c72fd3823357988c4a5967bf9e/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  },
+  {
+    "name": "Provincie-Zuid-Holland-Omgevingsbeleid-Frontend",
+    "src": "https://raw.githubusercontent.com/Provincie-Zuid-Holland/Omgevingsbeleid-Frontend/da6304a77a8dfd55f4b7968099dc1db1e9035a71/publiccode.yml",
+    "error": "while scanning a simple key\n  in \"yamls/Provincie-Zuid-Holland-Omgevingsbeleid-Frontend\", line 25, column 9\ncould not find expected ':'\n  in \"yamls/Provincie-Zuid-Holland-Omgevingsbeleid-Frontend\", line 27, column 9"
+  },
+  {
+    "name": "RegioneUmbria-SISO",
+    "src": "https://raw.githubusercontent.com/RegioneUmbria/SISO/7eba83d343b836e2075a9404e92044722bffc103/publiccode.yml",
+    "error": "while scanning for the next token\nfound character '\\t' that cannot start any token\n  in \"yamls/RegioneUmbria-SISO\", line 63, column 12"
+  },
+  {
+    "name": "ministero-salute-it-dgc-repository-template",
+    "src": "https://raw.githubusercontent.com/ministero-salute/it-dgc-repository-template/01938d6a614d95fa2bf5f7c4f6462bfceb6f8ae5/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  },
+  {
+    "name": "teamdigitale-pdnd-semantic-katalod",
+    "src": "https://raw.githubusercontent.com/teamdigitale/pdnd-semantic-katalod/08cb6d08c6c220016fda4efab3c5486db4e61d89/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  },
+  {
+    "name": "teamdigitale-pdnd-landing",
+    "src": "https://raw.githubusercontent.com/teamdigitale/pdnd-landing/46ae2571212aedc03f74c27e25534b30cd157e8f/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  },
+  {
+    "name": "RegioneUmbria-GIT",
+    "src": "https://raw.githubusercontent.com/RegioneUmbria/GIT/1c16f4538511ec3e140626fd947802cb49e24c07/publiccode.yml",
+    "error": "while scanning for the next token\nfound character '\\t' that cannot start any token\n  in \"yamls/RegioneUmbria-GIT\", line 91, column 12"
+  },
+  {
+    "name": "RegioneUmbria-VBG",
+    "src": "https://raw.githubusercontent.com/RegioneUmbria/VBG/dbd629b1898116bff6f7519e4be3b857c29efd8e/publiccode.yml",
+    "error": "while scanning for the next token\nfound character '\\t' that cannot start any token\n  in \"yamls/RegioneUmbria-VBG\", line 39, column 12"
+  },
+  {
+    "name": "RegioneLombardia-LombardiaInforma",
+    "src": "https://raw.githubusercontent.com/RegioneLombardia/LombardiaInforma/a8daba15bbdc07dbdbd7bda33d78299960a298a2/publiccode.yml",
+    "error": "while scanning for the next token\nfound character '\\t' that cannot start any token\n  in \"yamls/RegioneLombardia-LombardiaInforma\", line 25, column 51"
+  },
+  {
+    "name": "Azienda-USL-di-Bologna-DAE-RespondER",
+    "src": "https://raw.githubusercontent.com/Azienda-USL-di-Bologna/DAE-RespondER/e5ca656720ec26f7411f0c7a8313686aee2de954/publiccode.yml",
+    "error": "while scanning a simple key\n  in \"yamls/Azienda-USL-di-Bologna-DAE-RespondER\", line 63, column 1\ncould not find expected ':'\n  in \"yamls/Azienda-USL-di-Bologna-DAE-RespondER\", line 64, column 1"
+  },
+  {
+    "name": "italia-publiccode-parser-orb",
+    "src": "https://raw.githubusercontent.com/italia/publiccode-parser-orb/7a5b89c76dc73ccbf9dcc010417e95dffc325830/publiccode.yml",
+    "error": "'str' object does not support item assignment"
+  },
+  {
+    "name": "comunedimesagne-SEP",
+    "src": "https://raw.githubusercontent.com/comunedimesagne/SEP/25c0b43e709686ef37109796236781aa75e80a2f/publiccode.yml",
+    "error": "while parsing a block mapping\n  in \"yamls/comunedimesagne-SEP\", line 9, column 3\nexpected <block end>, but found '<block mapping start>'\n  in \"yamls/comunedimesagne-SEP\", line 42, column 4"
+  },
+  {
+    "name": "ministero-salute-it-dgc-verificac19-sdk-android",
+    "src": "https://raw.githubusercontent.com/ministero-salute/it-dgc-verificac19-sdk-android/1f3f4df95fd4528af7e5df8f2157f99c88e5ec77/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  },
+  {
+    "name": "italia-dati-ontopia-lodview",
+    "src": "https://raw.githubusercontent.com/italia/dati-ontopia-lodview/5da0df5379d53f75133d7729f75545339edc0866/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  },
+  {
+    "name": "Nhialyien-Green-pass",
+    "src": "https://raw.githubusercontent.com/Nhialyien/Green-pass/ebb874445ea40c482f64516d0da7e46f898b5086/publiccode.yml",
+    "error": "'NoneType' object does not support item assignment"
+  }
+]
