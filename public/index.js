@@ -20,50 +20,96 @@ $(() => {
     },
     columns: [
       {
+        caption: 'Status',
+        dataField: 'stat',
+        width: 26,
+        cellTemplate(container, options) {
+          var icon = "🟡"
+          switch (options.value) {
+            case "stable": icon = "🟢";break;
+            case "beta": icon = "🟠";break;
+            case "development": icon ="🔴";break;
+            case "production": icon = "🔵";break;
+          }
+          $('<span title="'+options.value+'">' + icon + '</span>')
+            .appendTo(container);
+        },
+      },
+      {
         caption: 'Release Date',
         dataField: 'date',
         width: 100
       },
       {
-        caption: 'Status',
-        dataField: 'stat',
-        width: 80
+        caption: 'Watchers',
+        dataField: 'w',
+        width: 50,
       },
       {
-        caption: 'Application Type',
-        dataField: 'type',
-        width: 120
+        caption: 'Size',
+        dataField: 's',
+        width: 60
       },
       {
         dataField:'name',
         caption: 'Software Name',
         cellTemplate(container, options) {
+          var is_a_fork = ""
+          if (options.data["f"]) {
+            is_a_fork = "🍴"
+          }
           $('<b>')
-            .append( options.value )
+            .append( is_a_fork + options.value  )
             .appendTo(container);
         },
         width: 250
 
       },
       {
-        caption: 'Language(s)',
-        dataField: 'lang',
-        width: 80
-      },
-      {
         caption: 'Maintained by',
         dataField: 'mnt',
-        width: 90
+        width:26,
+        cellTemplate(container, options) {
+          var maintainer = "👾"
+          switch (options.data["mnt"]) {
+            case "community": maintainer = "👫";break;
+            case "internal": maintainer = "👤";break;
+            case "individual": maintainer = "🥷";break;
+            case "contract": maintainer = "💰";break;
+          }
+          maintainer = '<span title="'+options.data["mnt"]+'">' + maintainer + '</span>'
+          $(maintainer)
+            .appendTo(container);
+        },
       },
       {
-        caption: 'License',
+        caption: 'Language',
         dataField: 'l',
-        width: 110
+        width: 100
       },
       {
         caption: 'Platform',
         dataField: 'p',
         width: 90
+      },
+      {
+        caption: 'Description',
+        dataField: 'd',
+      },
+      {
+        caption: 'Language(s)',
+        dataField: 'lang',
+        width: 60
+      },
+      {
+        caption: 'Picture',
+        dataField: 'logo',
+        width: 90,
+        cellTemplate(container, options) {
+          $('<div>').addClass("im")
+            .append($('<img>', { src: options.value }))
+            .appendTo(container);
+        }
       },
       {
         caption: 'Project URL',
@@ -82,7 +128,7 @@ $(() => {
             .append( "&gt;&gt;" )
             .appendTo(container);
         },
-        width: 80
+        width: 70
       }
       ],
   });
