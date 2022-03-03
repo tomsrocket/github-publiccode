@@ -12,12 +12,12 @@ import subprocess
 import sqlite3
 import http.cookiejar as cookielib
 
+# check this page - you should add github client id and secret to the config
+# https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting
+import config
 
 logging.basicConfig(level=logging.INFO, format='<%(asctime)s %(levelname)s> %(message)s')
 logging.info("START")
-
-
-
 
 
 
@@ -142,6 +142,13 @@ def downloadPubliccodeYmls(repositoryList):
   return repo_lookup
 
 
+def readGithubApiContent():
+
+
+
+    "https://api.github.com/repos/torakiki/pdfsam/contributors"
+
+
 
 def getGithubApiInformation(s, reponame):
 
@@ -157,16 +164,13 @@ def getGithubApiInformation(s, reponame):
         filecontent = "".join(line.rstrip() for line in myfile)
         data = json.loads(filecontent)
 
-    # check this page - we should try to get more free api calls:
-    # https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting
-
-    elif 0:
+    else:
       logging.info("%s - HTTP GET", filename)
       url = 'https://api.github.com/repos/{}'.format(reponame)
-      req = s.get(url)
+      req = requests.get(url, auth=(config.github_client_id, config.github_client_secret))
       open(filename, 'wb').write(req.content)
       filecontent = req.text
-      time.sleep(20)
+      time.sleep(10)
 
       data = json.loads(filecontent)
       if not ("id" in data):
