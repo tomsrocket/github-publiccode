@@ -88,7 +88,7 @@ def getFirefoxCookies():
 def getListOfGithubReposWithPubliccodeYml(s):
   # get all result pages
   repositoryList = []
-  for pageNr in range(1, 34):
+  for pageNr in range(1, 35):
 
     filename = "htmls/resultpage{}.html".format(pageNr)
     filecontent = ''
@@ -142,11 +142,39 @@ def downloadPubliccodeYmls(repositoryList):
   return repo_lookup
 
 
-def readGithubApiContent():
+def readGithubApiContent(basefilename, url):
+  directory = 'public/details/'
+  filename = directory + basefilename
+  filecontent = "{}"
 
+  if os.path.isfile(filename):
+    logging.info("%s - using cache", filename)
+    with open(filename) as myfile:
+      filecontent = "".join(line.rstrip() for line in myfile)
+      data = json.loads(filecontent)
 
+  else:
+    logging.info("%s - HTTP GET", filename)
 
-    "https://api.github.com/repos/torakiki/pdfsam/contributors"
+    req = requests.get(url, auth=(config.github_client_id, config.github_client_secret))
+    open(filename, 'wb').write(req.content)
+    filecontent = req.text
+    time.sleep(10)
+
+    data = json.loads(filecontent)
+    if isinstance(data, list):
+      if not ("id" in data[0]):
+        logging.error("UNWANTED GITHUB RESPONSE: %s", filename)
+        logging.error("maybe rate limit exceeded? %s", filecontent)
+        raise SystemExit
+
+    if not ("id" in data):
+      logging.error("UNWANTED GITHUB RESPONSE: %s", filename)
+      logging.error("maybe rate limit exceeded? %s", filecontent)
+      raise SystemExit
+
+  return data
+  "https://api.github.com/repos/torakiki/pdfsam/contributors"
 
 
 
@@ -154,29 +182,10 @@ def getGithubApiInformation(s, reponame):
 
   data = {}
   if reponame:
-    directory = 'public/details/'
-    filename = directory + reponame.replace('/', '-') + ".json"
-    filecontent = "{}"
+    filename = reponame.replace('/', '-') + ".json"
+    url = 'https://api.github.com/repos/{}'.format(reponame)
+    data = readGithubApiContent(filename, url)
 
-    if os.path.isfile(filename):
-      logging.info("%s - using cache", filename)
-      with open(filename) as myfile:
-        filecontent = "".join(line.rstrip() for line in myfile)
-        data = json.loads(filecontent)
-
-    else:
-      logging.info("%s - HTTP GET", filename)
-      url = 'https://api.github.com/repos/{}'.format(reponame)
-      req = requests.get(url, auth=(config.github_client_id, config.github_client_secret))
-      open(filename, 'wb').write(req.content)
-      filecontent = req.text
-      time.sleep(10)
-
-      data = json.loads(filecontent)
-      if not ("id" in data):
-        logging.error("UNWANTED GITHUB RESPONSE: %s", filename)
-        logging.error("maybe rate limit exceeded? %s", filecontent)
-        raise SystemExit
   else:
     logging.warning("EMPTY REPO NAME?")
 

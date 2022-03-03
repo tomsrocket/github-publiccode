@@ -38,6 +38,11 @@ $(() => {
       {
         caption: 'Release Date',
         dataField: 'date',
+        width: 90
+      },
+      {
+        caption: 'Latest Commit',
+        dataField: 'pa',
         width: 100
       },
       {
@@ -128,7 +133,7 @@ $(() => {
             .append( "&gt;&gt;" )
             .appendTo(container);
         },
-        width: 70
+        width: 50
       }
       ],
   });
