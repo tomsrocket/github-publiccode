@@ -43,7 +43,7 @@ $(() => {
       {
         caption: 'Latest Commit',
         dataField: 'pa',
-        width: 100
+        width: 90
       },
       {
         caption: 'Watchers',
@@ -53,7 +53,7 @@ $(() => {
       {
         caption: 'Contributors',
         dataField: 'cont',
-        width: 100,
+        width: 90,
       },
       {
         caption: 'Size',
@@ -116,8 +116,12 @@ $(() => {
         dataField: 'logo',
         width: 90,
         cellTemplate(container, options) {
+          var logo = options.value;
+          if (!logo) {
+            logo = options.data["av"]
+          }
           $('<div>').addClass("im")
-            .append($('<img>', { src: options.value }))
+            .append($('<img>', { src: logo }))
             .appendTo(container);
         }
       },
