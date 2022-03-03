@@ -168,11 +168,11 @@ def readGithubApiContent(basefilename, url):
     req = requests.get(url, auth=(config.github_client_id, config.github_client_secret))
     open(filename, 'wb').write(req.content)
     filecontent = req.text
-    time.sleep(10)
+    time.sleep(2)
 
     data = json.loads(filecontent)
     if isinstance(data, list):
-      if not ("id" in data[0]):
+      if data and not ("id" in data[0]):
         logging.error("UNWANTED GITHUB RESPONSE: %s", filename)
         logging.error("maybe rate limit exceeded? %s", filecontent)
         raise SystemExit
@@ -204,9 +204,11 @@ def getGithubApiInformation(s, reponame):
       'f': 'forks_count',
       'l': 'language',
       'f': 'fork',
-      'pa': 'pushed_at'
+      'pa': 'pushed_at',
+      'av': 'owner-avatar_url'
       }
     )
+    ghData["pa"] = ghData["pa"][0:10]
 
     # load contributor data
     filename = reponame.replace('/', '-') + "-contributors.json"
