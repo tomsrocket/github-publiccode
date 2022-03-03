@@ -51,6 +51,11 @@ $(() => {
         width: 50,
       },
       {
+        caption: 'Contributors',
+        dataField: 'cont',
+        width: 100,
+      },
+      {
         caption: 'Size',
         dataField: 's',
         width: 60

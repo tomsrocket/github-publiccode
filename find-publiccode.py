@@ -87,7 +87,16 @@ def getFirefoxCookies():
 
 def getListOfGithubReposWithPubliccodeYml(s):
   # get all result pages
-  repositoryList = []
+  repositoryList = [
+    '/mpfiesole/mpfiesole/5cdb57572d4df224532c26433d4d881490fce42f/publiccode.yml',
+    '/aziendazero/ecm/57fd6fba8ead03db016395269e3f2dd1b998d42b/publiccode.yml',
+    '/CodeForBaltimore/Healthcare-Rollcall/0ceb4067444c71674d1af97e2022975e83cc9c92/publiccode.yml',
+    '/CodeForBaltimore/ProjectTemplate/c2206173b56e8466aa18dc7a108438faa8b673ea/publiccode.yml'
+    '/regione-marche/e-procurement-WSGene/e46bfd82681e3b7adfc5afcddbd27ef86df3e8b7/publiccode.yml',
+    '/regione-marche/e-procurement-appalti-rest/92970ba0e25c760911bf139eed4e1d4093d00a4d/publiccode.yml',
+    '/regione-marche/e-procurement-BANDEU/74b3e47c5e2999925e5c4def4d10a5b3c852ecd9/publiccode.yml',
+    '/regione-marche/e-procurement-WSCompositore/4acf452b5033a1db5ad3ba253e02c66bc7d2cdba/publiccode.yml',
+  ]
   for pageNr in range(1, 35):
 
     filename = "htmls/resultpage{}.html".format(pageNr)
@@ -168,7 +177,7 @@ def readGithubApiContent(basefilename, url):
         logging.error("maybe rate limit exceeded? %s", filecontent)
         raise SystemExit
 
-    if not ("id" in data):
+    elif not ("id" in data):
       logging.error("UNWANTED GITHUB RESPONSE: %s", filename)
       logging.error("maybe rate limit exceeded? %s", filecontent)
       raise SystemExit
@@ -180,25 +189,44 @@ def readGithubApiContent(basefilename, url):
 
 def getGithubApiInformation(s, reponame):
 
-  data = {}
+  ghData = {}
   if reponame:
+
+    # load basic github stats
     filename = reponame.replace('/', '-') + ".json"
     url = 'https://api.github.com/repos/{}'.format(reponame)
     data = readGithubApiContent(filename, url)
 
+    ghData = k_extract(data, {
+      'd2': 'description',
+      's': 'size',
+      'w': 'watchers_count',
+      'f': 'forks_count',
+      'l': 'language',
+      'f': 'fork',
+      'pa': 'pushed_at'
+      }
+    )
+
+    # load contributor data
+    filename = reponame.replace('/', '-') + "-contributors.json"
+    url = 'https://api.github.com/repos/{}/contributors'.format(reponame)
+    contributors = readGithubApiContent(filename, url)
+    c10 = c100 = c1000 = 0
+    for contributor in contributors:
+      if contributor["contributions"]<10:
+        c10 = c10 + 1
+      elif contributor["contributions"]<100:
+        c100 = c100 + 1
+      else:
+        c1000 = c1000 + 1
+    ghData.update({
+      'cont': '{}/{}/{}'.format(c1000,c100,c10)
+    })
+
   else:
     logging.warning("EMPTY REPO NAME?")
 
-  ghData = k_extract(data, {
-    'd2': 'description',
-    's': 'size',
-    'w': 'watchers_count',
-    'f': 'forks_count',
-    'l': 'language',
-    'f': 'fork',
-    'pa': 'pushed_at'
-    }
-  )
 
   return ghData
   """
