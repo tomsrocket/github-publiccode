@@ -1,9 +1,9 @@
 $(() => {
 
-  $('#legend').append('<div><b>Status:</b> 🔵production, 🟢stable, 🟡other, 🟠beta, 🔴development</div>');
-  $('#legend').append('<div><b>Maintained by:</b> 💰contractor, 👤internal, 👫community, 🥷individual, 👾other');
   $('#legend').append('<div><b>Columns:</b> ⭐ Nr. of stars, 💻 Nr. of contributions, 👥 Nr. of contributors, 📅 Days since latest commit');
   $('#legend').append('<div><b>Rating:</b> 🌕 very good .. 🌖 good .. 🌗 ok ..  🌘 risky .. 🌑 bad');
+  $('#legend').append('<div><b>OSS community health rating:</b> 🟢perfect, 🟡two indicators are not optimal, 🟠at least one indicator is critical (e.g. "no activity for too long time"), 🔴several critical indicators</div>');
+  $('#legend').append('<div><b>Maintained by:</b> 💰contractor, 👤internal, 👫community, 🥷individual, 👾other');
 
   function getRatingSymbol(position, rating) {
     const number = rating.charAt(position)
@@ -24,7 +24,7 @@ $(() => {
   }
 
   $('#gridContainer').dxDataGrid({
-    dataSource: 'public-code-list.json?v=0.5',
+    dataSource: 'public-code-list.json?v=0.51',
     rowAlternationEnabled: true,
     showBorders: true,
     paging: {
@@ -51,22 +51,19 @@ $(() => {
     },
     columns: [
       {
-        caption: 'Rating',
+        caption: 'Community health rating',
         dataField: 'rt',
-        width: 50
-      },
-      {
-        caption: 'Status',
-        dataField: 'stat',
-        width: 26,
+        width: 50,
         cellTemplate(container, options) {
-          var icon = "🟡"
-          switch (options.value) {
-            case "stable": icon = "🟢";break;
-            case "beta": icon = "🟠";break;
-            case "development": icon ="🔴";break;
-            case "production": icon = "🔵";break;
-          }
+          const rating = options.value.substr(1);
+          var desc = 'All indicators green';
+          const nr_worst = (rating.match(/1/g)||[]).length;
+          const nr_bad = (rating.match(/2/g)||[]).length;
+          var icon = "🟢"
+          if (nr_worst > 1) {icon = '🔴';desc = 'More than one indicator is critical'}
+          else if (nr_worst > 0) {icon = '🟠';desc = 'Danger: One indicator is critial'}
+          else if (nr_bad > 1) {icon = '🟡';desc = 'At least two subobtimal indicators'}
+          else if (nr_bad == 1) {icon = '🟢';desc = 'Only one subobtimal indicator'}
           $('<span title="'+options.value+'">' + icon + '</span>')
             .appendTo(container);
         },
@@ -188,6 +185,16 @@ $(() => {
         caption: 'Language(s)',
         dataField: 'lang',
         width: 60
+      },
+      {
+        caption: 'Project status',
+        dataField: 'stat',
+        width: 26,
+        cellTemplate(container, options) {
+          var icon = options.value.substring(0,1)
+          $('<span title="'+options.value+'">' + icon + '</span>')
+            .appendTo(container);
+        },
       },
       {
         caption: 'YAML',
