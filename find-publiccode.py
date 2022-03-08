@@ -25,8 +25,10 @@ GITHUB_SEARCHRESULT_URL_TEMPLATE = 'https://github.com/search?o=desc&p={}&q=+fil
 
 
 
-# Init logging
+# Init logging with colorized error messages on the command line
 logging.basicConfig(level=logging.INFO, format='<%(asctime)s %(levelname)s> %(message)s')
+logging.addLevelName( logging.WARNING, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
+logging.addLevelName( logging.ERROR, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
 logging.info("START")
 
 # Helper functions to extract nested values of an array in a "failsafe" way
@@ -51,7 +53,7 @@ def k_extract(target_dict, k_dict):
         raise Exception("get_nested_json_value() not implemented for {} keys in: {}".format(len(keys), keys))
 
     except (TypeError, KeyError, IndexError):
-        logging.warning("Did not find key %s", value)
+        logging.log(logging.DEBUG if value == 'logo' else logging.WARNING, "Did not find key %s", value)
 
     response[key] = node_value
   return response
