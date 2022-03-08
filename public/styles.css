@@ -1,2 +1,3 @@
-div.im {width:80px;max-height:40px;overflow:hidden}
-div.im img {max-width:80px}
+div.im img {max-height:20px; vertical-align:middle;	margin-right:5px;}
+#legend {margin-top:20px}
+#legend div {display:inline-block;padding:0 20px 10px 0}

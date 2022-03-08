@@ -1,6 +1,30 @@
 $(() => {
+
+  $('#legend').append('<div><b>Status:</b> 🔵production, 🟢stable, 🟡other, 🟠beta, 🔴development</div>');
+  $('#legend').append('<div><b>Maintained by:</b> 💰contractor, 👤internal, 👫community, 🥷individual, 👾other');
+  $('#legend').append('<div><b>Columns:</b> ⭐ Nr. of stars, 💻 Nr. of contributions, 👥 Nr. of contributors, 📅 Days since latest commit');
+  $('#legend').append('<div><b>Rating:</b> 🌕 very good .. 🌖 good .. 🌗 ok ..  🌘 risky .. 🌑 bad');
+
+  function getRatingSymbol(position, rating) {
+    const number = rating.charAt(position)
+    icon = "🌧"
+    switch (number) {
+      case "1": icon ="🌑"; break;
+      case "2": icon ="🌘"; break;
+      case "3": icon ="🌗"; break;
+      case "4": icon ="🌖"; break;
+      case "5": icon ="🌕"; break;
+    }
+    return icon
+  }
+  function getRatingColor(position, rating) {
+    const number = rating.charAt(position)
+    if (number == 1) { return '#ffddee'; }
+    if (number == 2) { return '#ffeedd'; }
+  }
+
   $('#gridContainer').dxDataGrid({
-    dataSource: 'public-code-list.json',
+    dataSource: 'public-code-list.json?v=0.5',
     rowAlternationEnabled: true,
     showBorders: true,
     paging: {
@@ -18,7 +42,19 @@ $(() => {
         summaryType: 'count',
       }],
     },
+    onCellPrepared: function(row) {
+      const c = row.column.caption
+      if (row.rowType != "data") { return; }
+      if (c.startsWith('📅')) { row.cellElement.css("background-color", getRatingColor(1, row.data["rt"])); }
+      if (c.startsWith('💻')) { row.cellElement.css("background-color", getRatingColor(2, row.data["rt"])); }
+      if (c.startsWith('👥')) { row.cellElement.css("background-color", getRatingColor(3, row.data["rt"])); }
+    },
     columns: [
+      {
+        caption: 'Rating',
+        dataField: 'rt',
+        width: 50
+      },
       {
         caption: 'Status',
         dataField: 'stat',
@@ -41,27 +77,58 @@ $(() => {
         width: 90
       },
       {
-        caption: 'Latest Commit',
-        dataField: 'pa',
-        width: 90
-      },
-      {
-        caption: 'Watchers',
+        caption: '⭐ Stars',
         dataField: 'w',
-        width: 50,
+        width: 60,
+        cellTemplate(container, options) {
+          $('<span>' + options.value + '</span>').append(getRatingSymbol(0, options.data["rt"]))
+            .appendTo(container);
+        },
       },
       {
-        caption: 'Contributors',
-        dataField: 'cont',
-        width: 90,
+        caption: '📅 Days since latest commit',
+        dataField: 'pa',
+        width: 60,
+        color: {argb:'FF00FF00'},
+        cellTemplate(container, options) {
+          $('<span>' + options.value + '</span>').append(getRatingSymbol(1, options.data["rt"]))
+            .appendTo(container);
+        },
       },
       {
-        caption: 'Size',
-        dataField: 's',
-        width: 60
+        caption: '💻 Contributions',
+        dataField: 'cb',
+        width: 60,
+        cellTemplate(container, options) {
+          $('<span>' + options.value + '</span>').append(getRatingSymbol(2, options.data["rt"]))
+            .appendTo(container);
+        },
       },
       {
-        dataField:'name',
+        caption: '👥 Contributors',
+        dataField: 'c',
+        width: 60,
+        cellTemplate(container, options) {
+          $('<span>' + options.value + '</span>').append(getRatingSymbol(3, options.data["rt"]))
+            .appendTo(container);
+        },
+      },
+      {
+        caption: 'Contributor types',
+        dataField: 'cn',
+        width: 70,
+      },
+      {
+        caption: 'Project URL',
+        dataField: 'r',
+        cellTemplate(container, options) {
+          $('<a>', {href: options.data["url"]})
+            .append( options.data['rg'] + "/" + options.value )
+            .appendTo(container);
+        },
+      },
+      {
+        dataField:'n',
         caption: 'Software Name',
         cellTemplate(container, options) {
           var is_a_fork = ""
@@ -73,7 +140,18 @@ $(() => {
             .appendTo(container);
         },
         width: 250
-
+      },
+      {
+        caption: 'Organisation (=Github Repo Owner)',
+        dataField: 'rg',
+        width: 110,
+        cellTemplate(container, options) {
+          logo = options.data["av"]
+          $('<div>').addClass("im")
+            .append($('<img>', { src: logo }))
+            .append(options.value)
+            .appendTo(container);
+        }
       },
       {
         caption: 'Maintained by',
@@ -95,7 +173,7 @@ $(() => {
       {
         caption: 'Language',
         dataField: 'l',
-        width: 100
+        width: 90
       },
       {
         caption: 'Platform',
@@ -110,29 +188,6 @@ $(() => {
         caption: 'Language(s)',
         dataField: 'lang',
         width: 60
-      },
-      {
-        caption: 'Picture',
-        dataField: 'logo',
-        width: 90,
-        cellTemplate(container, options) {
-          var logo = options.value;
-          if (!logo) {
-            logo = options.data["av"]
-          }
-          $('<div>').addClass("im")
-            .append($('<img>', { src: logo }))
-            .appendTo(container);
-        }
-      },
-      {
-        caption: 'Project URL',
-        dataField: 'url',
-        cellTemplate(container, options) {
-          $('<a>', {href: options.value})
-            .append( options.value )
-            .appendTo(container);
-        },
       },
       {
         caption: 'YAML',

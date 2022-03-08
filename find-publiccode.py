@@ -11,19 +11,25 @@ import re
 import subprocess
 import sqlite3
 import http.cookiejar as cookielib
+from datetime import datetime, timedelta
 
 # check this page - you should add github client id and secret to the config
 # https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting
 import config
 
+
+TODAY = datetime.now()
+
+GITHUB_SEARCHRESULT_URL_TEMPLATE = 'https://github.com/search?o=desc&p={}&q=+filename%3Apubliccode.yml+path%3A%2F&s=indexed&type=Code'
+
+
+
+
+# Init logging
 logging.basicConfig(level=logging.INFO, format='<%(asctime)s %(levelname)s> %(message)s')
 logging.info("START")
 
-
-
-
-
-# helper functions to extract nested values of array "failsafe"
+# Helper functions to extract nested values of an array in a "failsafe" way
 def kk(d, n):
   return d[n] if n in d else ""
 
@@ -51,8 +57,9 @@ def k_extract(target_dict, k_dict):
   return response
 
 
-
-
+#
+# Helper functions to acces firefox cookies (otherwise the github search won't work)
+#
 def readFirefoxCookiesSqlite(cj, ff_cookies):
   con = sqlite3.connect(ff_cookies)
   cur = con.cursor()
@@ -85,8 +92,10 @@ def getFirefoxCookies():
   return cj
 
 
+
 def getListOfGithubReposWithPubliccodeYml(s):
-  # get all result pages
+
+  # start with some known repositories
   repositoryList = [
     '/mpfiesole/mpfiesole/5cdb57572d4df224532c26433d4d881490fce42f/publiccode.yml',
     '/aziendazero/ecm/57fd6fba8ead03db016395269e3f2dd1b998d42b/publiccode.yml',
@@ -96,20 +105,25 @@ def getListOfGithubReposWithPubliccodeYml(s):
     '/regione-marche/e-procurement-appalti-rest/92970ba0e25c760911bf139eed4e1d4093d00a4d/publiccode.yml',
     '/regione-marche/e-procurement-BANDEU/74b3e47c5e2999925e5c4def4d10a5b3c852ecd9/publiccode.yml',
     '/regione-marche/e-procurement-WSCompositore/4acf452b5033a1db5ad3ba253e02c66bc7d2cdba/publiccode.yml',
+    '/kokorin/Jaffree/master/publiccode.yml',
+    '/Azienda-USL-di-Bologna/babel/master/publiccode.yml',
+    '/ESTAR2021/LOGICAR/main/publiccode.yml',
+    '/r3vit/publiccode.yml-validator/master/publiccode.yml'
   ]
-  for pageNr in range(1, 35):
 
+  # scrape search result pages from github frontend
+  for pageNr in range(1, 35):
     filename = "htmls/resultpage{}.html".format(pageNr)
     filecontent = ''
 
     if os.path.isfile(filename):
-      logging.info("%s - using cache", filename)
+      logging.debug("%s - using cache", filename)
       with open(filename) as myfile:
         filecontent ="".join(line.rstrip() for line in myfile)
 
     else:
       logging.info("%s - HTTP GET", filename)
-      url = 'https://github.com/search?o=desc&p={}&q=+filename%3Apubliccode.yml+path%3A%2F&s=indexed&type=Code'.format(pageNr)
+      url = GITHUB_SEARCHRESULT_URL_TEMPLATE.format(pageNr)
       req = s.get(url)
       open(filename, 'wb').write(req.content)
       filecontent = req.text
@@ -152,12 +166,14 @@ def downloadPubliccodeYmls(repositoryList):
 
 
 def readGithubApiContent(basefilename, url):
+  # read and parse github api json
+  # and cache it to a public file (for later use via clientside javascript)
   directory = 'public/details/'
   filename = directory + basefilename
   filecontent = "{}"
 
   if os.path.isfile(filename):
-    logging.info("%s - using cache", filename)
+    logging.debug("%s - using cache", filename)
     with open(filename) as myfile:
       filecontent = "".join(line.rstrip() for line in myfile)
       data = json.loads(filecontent)
@@ -183,8 +199,6 @@ def readGithubApiContent(basefilename, url):
       raise SystemExit
 
   return data
-  "https://api.github.com/repos/torakiki/pdfsam/contributors"
-
 
 
 def getGithubApiInformation(s, reponame):
@@ -208,14 +222,17 @@ def getGithubApiInformation(s, reponame):
       'av': 'owner-avatar_url'
       }
     )
-    ghData["pa"] = ghData["pa"][0:10]
+    ghData["pa"] = abs((TODAY - datetime.strptime(str(ghData["pa"][0:10]), "%Y-%m-%d")).days)
+
 
     # load contributor data
     filename = reponame.replace('/', '-') + "-contributors.json"
     url = 'https://api.github.com/repos/{}/contributors'.format(reponame)
     contributors = readGithubApiContent(filename, url)
     c10 = c100 = c1000 = 0
+    contributions = 0
     for contributor in contributors:
+      contributions = contributions + contributor["contributions"]
       if contributor["contributions"]<10:
         c10 = c10 + 1
       elif contributor["contributions"]<100:
@@ -223,15 +240,19 @@ def getGithubApiInformation(s, reponame):
       else:
         c1000 = c1000 + 1
     ghData.update({
-      'cont': '{}/{}/{}'.format(c1000,c100,c10)
+      'c': c10+c100+c1000,
+      'cn': '{}/{}/{}'.format(c1000,c100,c10),
+      'cb': contributions
     })
 
   else:
     logging.warning("EMPTY REPO NAME?")
 
-
   return ghData
+
   """
+  content of github repo info
+  ===========================
 
   size	201875
   stargazers_count	25
@@ -264,6 +285,74 @@ def getGithubApiInformation(s, reponame):
   """
 
 
+def getCalculatedRating(entry):
+  overallRating = 0
+
+  # number of stars
+  rating = 0
+  if 'w' in entry:
+    stars = entry['w']
+    if stars>=10000:
+      rating = 5
+    elif stars>=1000:
+      rating = 4
+    elif stars>=100:
+      rating = 3
+    elif stars>=10:
+      rating = 2
+    else:
+      rating = 1
+  overallRating = overallRating + rating*1000
+
+  # days since last commit
+  rating = 0
+  if 'pa' in entry:
+    daysSinceLastPush = entry['pa']
+    if daysSinceLastPush>=500:
+      rating = 1
+    elif daysSinceLastPush>=200:
+      rating = 2
+    elif daysSinceLastPush>=100:
+      rating = 3
+    elif daysSinceLastPush>=30:
+      rating = 4
+    else:
+      rating = 5
+  overallRating = overallRating + rating*100
+
+  # number of contributions
+  rating = 0
+  if 'cb' in entry:
+    contributions = entry['cb']
+    if contributions>=10000:
+      rating = 5
+    elif contributions>=1000:
+      rating = 4
+    elif contributions>=100:
+      rating = 3
+    elif contributions>=10:
+      rating = 2
+    else:
+      rating = 1
+  overallRating = overallRating + rating*10
+
+  # number of contributors
+  rating = 0
+  if 'c' in entry:
+    contributors = entry['c']
+    if contributors>=50:
+      rating = 5
+    elif contributors>=20:
+      rating = 4
+    elif contributors>=10:
+      rating = 3
+    elif contributors>=5:
+      rating = 2
+    else:
+      rating = 1
+  overallRating = overallRating + rating
+
+  return str(overallRating)
 
 
 def extractSummaryInformationForAllPubliccodeYmls(session, repo_lookup):
@@ -285,7 +374,7 @@ def extractSummaryInformationForAllPubliccodeYmls(session, repo_lookup):
             'v': 'publiccodeYmlVersion',
             'date': 'releaseDate',
             'stat': 'developmentStatus',
-            'name': 'name',
+            'n': 'name',
             'cat': 'categories',
             'lang': 'localisation-availableLanguages',
             'type': 'softwareType',
@@ -294,19 +383,23 @@ def extractSummaryInformationForAllPubliccodeYmls(session, repo_lookup):
             'mnt': 'maintenance-type',
             'url': 'url',
             'src': 'src',
-            'logo': 'logo'
+            'l': 'logo'
             }
           )
 
+          # separate organisation name and repository name
           m = re.search('^https://[^/]+/([^/]+/[^/]+)/', data['src'])
           reponame = m.group(1) if m else ""
-          entry['r'] = reponame
+          if reponame:
+            (rOrg, rName) = reponame.split("/")
+            entry['r'] = rName
+            entry['rg'] = rOrg
 
           # fix relative logo urls
-          if entry["logo"] and not entry["logo"].startswith("http"):
-            entry["logo"] = 'https://raw.githubusercontent.com/{}/master/{}'.format(reponame, entry["logo"])
+          if entry["l"] and not entry["l"].startswith("http"):
+            entry["l"] = 'https://raw.githubusercontent.com/{}/master/{}'.format(reponame, entry["l"])
 
-          # get description
+          # get any "shortDescription" from publiccode.yml, prioritize english
           if "description" in data:
             if "en" in data["description"]:
               desc = data["description"]["en"]
@@ -319,9 +412,10 @@ def extractSummaryInformationForAllPubliccodeYmls(session, repo_lookup):
 
           gh = getGithubApiInformation(session, reponame)
           entry.update(gh)
+          entry['rt'] = getCalculatedRating(entry)
 
           logging.debug(entry)
-          if not "name" in entry:
+          if not "n" in entry:
             logging.error('Repo is missing name: %s', p)
           flist.append(entry)
 
@@ -361,6 +455,6 @@ def main():
 
 main()
 
-
+logging.info("ALL DONE!")
 
 
