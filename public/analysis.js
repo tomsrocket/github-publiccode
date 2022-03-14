@@ -53,14 +53,65 @@ $(() => {
         },
       }],
     });
-
   }
 
+  function drawBarChart(target, data, fieldName, title, color) {
+    var results = {};
+    var total = 0;
+    $.each( data, function( key, val ) {
+      const rkey = val[fieldName];
+      total++;
+      if (!results[rkey]) {
+        results[rkey] = 1;
+      } else {
+        results[rkey]++
+      }
+    });
+    console.debug(results)
+
+    var dataSource = [];
+    var other = 0;
+    var count = 0;
+    (Object.keys(results).sort(function(a,b){return results[a]-results[b]})).reverse().forEach(function(result) {
+      if (count++<20) {
+        dataSource.push({name: result, val: results[result],p: (results[result]/total)});
+      } else {
+        other+=results[result];
+      }
+    });
+    dataSource.push({name: "Other", val: other, p: (other/total)});
+
+    console.debug("total", total, dataSource)
+
+    $(target).dxChart({
+      dataSource: dataSource.reverse(),
+      rotated: true,
+      title: title,
+      tooltip: {
+        enabled: true,
+        customizeTooltip(arg) {
+          return {
+            text: `${arg.valueText} repositories (${(arg.point.data['p'] * 100).toFixed(2)}%)`,
+          };
+        },
+      },
+      legend: {
+        visible: false
+      },
+      series: {
+        argumentField: 'name',
+        valueField: 'val',
+        color: color,
+        type: 'bar'
+      },
+    });
+
+  }
 
   $.getJSON( "public-code-list.json", function( data ) {
     var results = {};
     $.each( data, function( key, val ) {
-      const rkey = val['l'];
+      const rkey = val['type'];
       if (!results[rkey]) {
         results[rkey] = 1;
       } else {
@@ -71,26 +122,22 @@ $(() => {
     var dataSource = [];
     var other = 0;
     var count = 0;
-    for (var result in results) {
+    (Object.keys(results).sort(function(a,b){return results[a]-results[b]})).reverse().forEach(function(result) {
       if (count++<10) {
         dataSource.push({name: result, val: results[result]});
       } else {
-        other++;
+        other+=results[result];
       }
-    }
-    dataSource.push({name: "Other", val: other});
-
-    dataSource.sort(function(a, b) {
-        return a['val'] - b['val'];
     });
+    dataSource.push({name: "Other", val: other});
 
     console.debug(dataSource)
 
-    $('#pie1').dxPieChart({
+    $('#pie4').dxPieChart({
       type: 'doughnut',
       palette: 'Soft Pastel',
       dataSource,
-      title: 'Programming Languages',
+      title: 'Software Type',
       tooltip: {
         enabled: true,
         customizeTooltip(arg) {
@@ -120,6 +167,8 @@ $(() => {
     });
 
     drawCommunityHealth(data)
+    drawBarChart('#pie1', data, 'l', 'Top Programming Languages', '#7565a4');
+    drawBarChart('#pie3', data, 'lgl', 'Top Licenses', '#456c68');
 
   });
 

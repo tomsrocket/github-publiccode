@@ -61,3 +61,6 @@ div.im img {max-height:20px; vertical-align:middle;	margin-right:5px;}
   flex-grow: 1;
   width:100%
 }
+div.diagram {
+  margin-top: 50px;
+}
