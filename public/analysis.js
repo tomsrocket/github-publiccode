@@ -108,7 +108,7 @@ $(() => {
 
   }
 
-  $.getJSON( "public-code-list.json", function( data ) {
+  function drawSoftwareType(data) {
     var results = {};
     $.each( data, function( key, val ) {
       const rkey = val['type'];
@@ -165,10 +165,38 @@ $(() => {
         },
       }],
     });
+  }
 
-    drawCommunityHealth(data)
+  function drawCategories(data) {
+    var results = {};
+    $.each( data, function( key, val ) {
+      const entries = val['cat'];
+      if (Array.isArray(entries)) {
+        entries.forEach(function(rkey){
+          if (!results[rkey]) {
+            results[rkey] = 1;
+          } else {
+            results[rkey]++
+          }
+        });
+      }
+    });
+    var dataSource = [];
+    var other = 0;
+    var count = 0;
+    (Object.keys(results).sort(function(a,b){return results[a]-results[b]})).reverse().forEach(function(result) {
+      dataSource.push({text: result, weight: results[result]});
+    });
+    $('#pie5').jQCloud(dataSource);
+  }
+
+  $.getJSON( "public-code-list.json", function( data ) {
+
     drawBarChart('#pie1', data, 'l', 'Top Programming Languages', '#7565a4');
+    drawCommunityHealth(data)
     drawBarChart('#pie3', data, 'lgl', 'Top Licenses', '#456c68');
+    drawSoftwareType(data);
+    drawCategories(data);
 
   });
 
