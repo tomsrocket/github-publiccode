@@ -14,7 +14,8 @@ https://tomsrocket.github.io/github-publiccode/public/
 
 ## More information about publiccode.yml
 
-* Homepage: https://docs.italia.it/italia/developers-italia/publiccodeyml-en/en/master/index.html
+* Format homepage (with discussions): https://github.com/publiccodeyml/publiccode.yml
+* Documentation Homepage: https://docs.italia.it/italia/developers-italia/publiccodeyml-en/en/master/index.html
 * Originally developed by the Foundation for Public Code: https://github.com/orgs/publiccodenet/repositories?type=all
 * "Old" repository for the publiccode.yml standard, with good information: https://github.com/publiccodenet/publiccode.yml
 * List of repositories related to pubbliccode standard: https://github.com/orgs/italia/repositories?q=publiccode
